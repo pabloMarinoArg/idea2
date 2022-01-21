@@ -2,7 +2,7 @@ import os
 from pickle import FALSE, TRUE
 from time import sleep
 
-loginData=''
+loginData=[]
 miLista=[]
 misTransacciones=[]
 
@@ -18,17 +18,20 @@ def menuPrincipal():
     def transacciones():
         screenCls()
         print(misTransacciones)
+        print("Cuenta Origen\t\t\tCuenta Destino\t\t\tMonto")
+        for line in misTransacciones:
+            print(line[0]+"\t\t"+line[1]+"\t\t"+line[2])
         sleep(5)
-        menuPrincipal
+        return
                     
     def cerrarSesion():
-        login()
+        loginData.clear()
+        return
     
     def error():
         print("Opcion Inexistente")
         sleep(2)
-        screenCls()
-        menuPrincipal()
+        return
 
     def nuevaTransaccion():
 
@@ -50,23 +53,22 @@ def menuPrincipal():
             def escribeLibro(origen, destino, monto):
                 misTransacciones.append([origen,destino,monto])
         
-            cambioCuenta(loginData,montoDes,"deb")
+            cambioCuenta(loginData[0],montoDes,"deb")
             cambioCuenta(ctaDes,montoDes,"cred")
-            escribeLibro(loginData,ctaDes,montoDes)
+            escribeLibro(loginData[0],ctaDes,montoDes)
             print("Transacción completa")
             sleep(3)
-            screenCls()
-            menuPrincipal()    
+            return    
        
        def existeCuenta(cuentaDestino):
-         if cuentaDestino in miLista and cuentaDestino != loginData:
+         if cuentaDestino in miLista and cuentaDestino != loginData[0]:
              return True
          else:
              return False
 
        def existeSaldo(montoDestino):
             for x in range(len(miLista)):
-                if miLista[x]==loginData:
+                if miLista[x]==loginData[0]:
                     valorSaldo = miLista[x+2].lstrip("SALDO INICIAL: $")
                     print("Saldo: "+valorSaldo) 
                     print("A debitar: "+montoDestino)
@@ -85,64 +87,71 @@ def menuPrincipal():
        if not existeCuenta(ctaDestino):
            print("Cuenta Inexistente o mismo origen")
            sleep(3)
-           screenCls()
-           menuPrincipal()
+           return
        if not existeSaldo(mtoDestino):
            sleep(3)
-           screenCls()
-           menuPrincipal()
+           return
        
        if input("Quiere confirmar la Transacción? (S/N)") == 'S':
            procesarTransaccion(ctaDestino,mtoDestino)
    
        sleep(3)
-       screenCls()
-       menuPrincipal()
+       return
 
     def saldo():
         for x in range(len(miLista)):
-            if miLista[x]==loginData:
+            if miLista[x]==loginData[0]:
                print("Saldo: "+miLista[x+2]) 
                sleep(5)
-               return
+        return
     
-        #screenCls()
-        #menuPrincipal()
-
-
+    def printMenu():
+        print("User Logged: "+loginData[0])
+        print("Opciones:\n1.Saldo\n2.Transacciones\n3.Nueva Transacción\n4.Cerrar Sesión")
+        
     switch_opciones = {
         "1": saldo,
         "2": transacciones,
         "3": nuevaTransaccion,
         "4": cerrarSesion
     }
-    print("User Logged: "+loginData)
-    print("Opciones:\n1.Saldo\n2.Transacciones\n3.Nueva Transacción\n4.Cerrar Sesión")
-    eleccion = input("Ingrese su opción: ")
-    print(eleccion)
 
-    switch_opciones.get(eleccion, error)()
+    while(len(loginData)>0):
+        screenCls()
+        printMenu()
+        eleccion = input("Ingrese su opción: ")
+        switch_opciones.get(eleccion, error)()
+    
+    return
 
 
 def login():
-    print ("ingrese sus credenciales")
-    print ("Bienvenido al Banco Central de Palmira")
-    myUser = input("USER:\n")
-    myPass = input("PASS:\n")
-        
-    with open ('listado de tarjetas.txt', 'rt') as miArchivo:
-        for misLineas in miArchivo:
-            miLista.append(misLineas.rstrip('\n'))
 
-    for x in range(len(miLista)):
-        if miLista[x]==myUser and miLista[x+1].lstrip("PIN: ")==myPass:
-            print("Credenciales Válidas") 
-            loginData = miLista[x]
+    def printLogin():
+        print ("ingrese sus credenciales")
+        print ("Bienvenido al Banco Central de Palmira")
     
-    sleep(2)
-    screenCls()
-    menuPrincipal()
+    with open ('listado de tarjetas.txt', 'rt') as miArchivo:
+       for misLineas in miArchivo:
+           miLista.append(misLineas.rstrip('\n'))
 
+    while len(loginData)==0:
+        screenCls()
+        printLogin()
+        myUser = input("USER:\n")
+        myPass = input("PASS:\n")    
+    
+        for x in range(len(miLista)):
+            if miLista[x]==myUser and miLista[x+1].lstrip("PIN: ")==myPass:
+                print("Credenciales Válidas") 
+                loginData.append(miLista[x])
+                print(loginData[0])
+    
+        if len(loginData)>0:
+            sleep(5)
+            screenCls()
+            menuPrincipal()
+    
 login()
 
 
